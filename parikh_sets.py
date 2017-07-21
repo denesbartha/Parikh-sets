@@ -1,3 +1,4 @@
+from collections import deque
 import unittest
 
 
@@ -52,6 +53,61 @@ def check_parikh_set_monotonicity(pi, k, sigma_size):
             if not pi[j - i].issubset(pi_j_minus_pi_i):
                 return False
     return True
+
+
+def is_connected(g):
+    """The graph is connected iff we can reach from every node every other one."""
+    assert len(g) > 0
+    start = next(g.iterkeys())
+    q = deque([start])
+    was = { start }
+    while q:
+        n = q.popleft()
+        for v in g[n]:
+            if v not in was:
+                was.add(v)
+                q.append(v)
+    return len(g) == len(was)
+
+
+def build_graph_from_pi(pi):
+    # return g
+    return True
+
+def find_shortest_word(pi):
+    """From the given pi_k sets finds the shortest w word that shares the same pi_k sets. Returns None if it cannot be
+    realized."""
+
+    # if the graph is not connected => there is no solution
+    if not is_connected(build_graph_from_pi(pi)):
+        return None
+
+    # size of the alphabet
+    sigma_size = len(next(iter(pi[1])))
+    q = deque([()])
+    while q:
+        w = q.popleft()
+        # if len(w) > len(pi) * 2:
+        #     return None
+        # check whether the current word did not generate more elements in pi_k
+        equal = True
+        for k in xrange(1, min(len(w), len(pi)) + 1):
+            pik = gen_parikh_set(w, k, sigma_size)
+            if len(pik) > len(pi[k]):
+                break
+            elif len(pik) < len(pi[k]):
+                if not pik.issubset(pi[k]):
+                    break
+                equal = False
+            elif not pik.issubset(pi[k]):
+                break
+        else:
+            # if the pi sets are the same => return shortest word
+            if equal and len(w) >= len(pi):
+                return w
+            for j in xrange(sigma_size):
+                q.append(w + (j,))
+    return None
 
 
 class TestParikhSets(unittest.TestCase):
