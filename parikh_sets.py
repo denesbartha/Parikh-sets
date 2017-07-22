@@ -1,4 +1,4 @@
-from collections import deque
+from collections import deque, defaultdict
 import unittest
 
 
@@ -60,7 +60,7 @@ def is_connected(g):
     assert len(g) > 0
     start = next(g.iterkeys())
     q = deque([start])
-    was = { start }
+    was = {start}
     while q:
         n = q.popleft()
         for v in g[n]:
@@ -70,9 +70,28 @@ def is_connected(g):
     return len(g) == len(was)
 
 
-def build_graph_from_pi(pi):
-    # return g
+def is_parikh_less(p1, p2):
+    """Returns true if p1 is <= p2 for each entry k of p1 (Parikh-vector)."""
+
+    assert len(p1) == len(p2)
+    for k in xrange(len(p1)):
+        if p1[k] > p2[k]:
+            return False
     return True
+
+
+def build_graph_from_pi(pi):
+    """Builds "poset" graph from the given Parikh sets."""
+
+    g = defaultdict(lambda: [])
+    for k in xrange(1, len(pi)):
+        for p1 in pi[k]:
+            for p2 in pi[k + 1]:
+                if is_parikh_less(p1, p2):
+                    g[p1].append(p2)
+                    g[p2].append(p1)
+    return g
+
 
 def find_shortest_word(pi):
     """From the given pi_k sets finds the shortest w word that shares the same pi_k sets. Returns None if it cannot be
@@ -137,8 +156,7 @@ class TestParikhSets(unittest.TestCase):
         pi32 = [gen_parikh_set(s3, k, 1) for k in xrange(1, len(s3) + 1)]
         self.verify_parikh_sets(pi31, pi32)
 
-    def test_check_parikh_set_monotonicity(self):
-        pi = {
+    spider = {
             1: {(1, 0, 0, 0, 0, 0), (0, 1, 0, 0, 0, 0), (0, 0, 1, 0, 0, 0), (0, 0, 0, 1, 0, 0), (0, 0, 0, 0, 1, 0),
                 (0, 0, 0, 0, 0, 1)},
             2: {(1, 1, 0, 0, 0, 0), (1, 0, 1, 0, 0, 0), (1, 0, 0, 0, 1, 0), (0, 0, 1, 1, 0, 0), (0, 0, 0, 0, 1, 1),
@@ -150,8 +168,13 @@ class TestParikhSets(unittest.TestCase):
             5: {(1, 1, 1, 1, 1, 0), (1, 1, 1, 0, 1, 1), (1, 0, 1, 1, 1, 1)},
             6: {(1, 1, 1, 1, 1, 1)}}
 
+    def test_check_parikh_set_monotonicity(self):
         for k in xrange(1, 5):
-            assert check_parikh_set_monotonicity(pi, k, 6)
+            assert check_parikh_set_monotonicity(TestParikhSets.spider, k, 6)
+
+    def test_find_shortest_word(self):
+        self.assertIsNone(find_shortest_word(TestParikhSets.spider))
+        self.assertIsNone(find_shortest_word({1: {(1, 0), (0, 1)}, 2: {(2, 0), (0, 2)}}))
 
 
 if __name__ == '__main__':
