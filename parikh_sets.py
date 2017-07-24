@@ -57,7 +57,9 @@ def check_parikh_set_monotonicity(pi, k, sigma_size):
 
 def is_connected(g):
     """The graph is connected iff we can reach from every node every other one."""
-    assert len(g) > 0
+    if len(g) == 0:
+        return True
+
     start = next(g.iterkeys())
     q = deque([start])
     was = {start}
@@ -71,18 +73,19 @@ def is_connected(g):
 
 
 def is_parikh_less(p1, p2):
-    """Returns true if p1 is <= p2 for each entry k of p1 (Parikh-vector)."""
-
+    """Returns true if p1 is <= p2 for each entry k of p1 (Parikh-vector) and the overall difference is 1."""
     assert len(p1) == len(p2)
+    diff = 0
     for k in xrange(len(p1)):
-        if p1[k] > p2[k]:
+        adiff = p2[k] - p1[k]
+        if adiff < 0:
             return False
-    return True
+        diff += adiff
+    return diff == 1
 
 
 def build_graph_from_pi(pi):
     """Builds "poset" graph from the given Parikh sets."""
-
     g = defaultdict(lambda: [])
     for k in xrange(1, len(pi)):
         for p1 in pi[k]:
@@ -106,8 +109,12 @@ def find_shortest_word(pi):
     q = deque([()])
     while q:
         w = q.popleft()
-        # if len(w) > len(pi) * 2:
-        #     return None
+
+        ####
+        if len(w) > len(pi) * 2:
+            return None
+        ####
+
         # check whether the current word did not generate more elements in pi_k
         equal = True
         for k in xrange(1, min(len(w), len(pi)) + 1):
@@ -175,7 +182,14 @@ class TestParikhSets(unittest.TestCase):
     def test_find_shortest_word(self):
         self.assertIsNone(find_shortest_word(TestParikhSets.spider))
         self.assertIsNone(find_shortest_word({1: {(1, 0), (0, 1)}, 2: {(2, 0), (0, 2)}}))
+        self.assertIsNone(find_shortest_word({1: {(0, 1), (1, 0)}, 2: {(0, 2), (1, 1)}, 3: {(0, 3), (2, 1)}}))
 
+        self.assertEqual((0,), find_shortest_word({1: {(1,)}}))
+        self.assertIn(find_shortest_word({1: {(1, 0), (0, 1)}, 2: {(1, 1)}}), {(0, 1), (1, 0)})
+
+        s1 = self.str_to_tuple("aabac")
+        pi1 = {k: gen_parikh_set(s1, k, 3) for k in xrange(1, len(s1) + 1)}
+        self.assertIn(find_shortest_word(pi1), {s1, s1[::-1]})
 
 if __name__ == '__main__':
     unittest.main()
