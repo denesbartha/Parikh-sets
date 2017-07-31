@@ -69,6 +69,20 @@ def starting_pi_elements(sigma_size=2):
     return pi_elements
 
 
+def check_level_connectivity(pi):
+    for k in pi:
+        for p in pi[k]:
+            for q in pi[k]:
+                if p != q:
+                    cnt = 0
+                    for i in xrange(len(p)):
+                        if abs(p[i] - q[i]) == 1:
+                            cnt += 1
+                    if cnt != 2:
+                        return False
+    return True
+
+
 def create_new_good_pi_sets(n, sigma_size, pi):
     for i in xrange(1, n + 1):
         for pelements in combinations(gen_pi_k(n, sigma_size=sigma_size), r=i):
@@ -78,7 +92,7 @@ def create_new_good_pi_sets(n, sigma_size, pi):
 
 
 def gen_monotonic_pi_sets(sigma_size=2):
-    """Generates monotonic PI sets."""
+    """Generates monotonic pi sets."""
 
     good_pi_sets = starting_pi_elements(sigma_size)
     n = 2
@@ -105,8 +119,8 @@ def find_exception(sigma_size=2):
             alen = len(pi)
             print cnt
             cnt = 0
-        if pi and find_shortest_word(pi) is None:
-            # print pi
+        if pi and check_level_connectivity(pi) and find_shortest_word(pi) is None:
+            print pi
             cnt += 1
         #     break
         i += 1
