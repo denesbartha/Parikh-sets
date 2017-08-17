@@ -136,29 +136,35 @@ def find_shortest_word(pi):
     return None
 
 
-class TestParikhSets(unittest.TestCase):
-    @staticmethod
-    def str_to_tuple(astr):
-        return tuple(map(lambda c: ord(c) - ord("a"), astr))
+def str_to_tuple(astr):
+    """Helper function for creating a vector (tuple) from the given string."""
+    return tuple(map(lambda c: ord(c) - ord("a"), astr))
 
+
+def tuple_to_str(t):
+    """Helper function for creating a string from the given vector (tuple)."""
+    return "".join([chr(ord('a') + i) * t[i] for i in xrange(len(t))])
+
+
+class TestParikhSets(unittest.TestCase):
     def verify_parikh_sets(self, pi1, pi2):
         self.assertEqual(len(pi1), len(pi2))
         for k in xrange(len(pi1)):
             self.assertEqual(pi1[k], pi2[k])
 
     def test_gen_parikh_set(self):
-        s1 = self.str_to_tuple("aaba")
+        s1 = str_to_tuple("aaba")
         pi11 = [{(1, 0), (0, 1)}, {(2, 0), (1, 1)}, {(2, 1)}, {(3, 1)}]
         pi12 = [gen_parikh_set(s1, k) for k in xrange(1, len(s1) + 1)]
         self.verify_parikh_sets(pi11, pi12)
 
-        s2 = self.str_to_tuple("aabac")
+        s2 = str_to_tuple("aabac")
         pi21 = [{(1, 0, 0), (0, 1, 0), (0, 0, 1)}, {(2, 0, 0), (1, 1, 0), (1, 0, 1)}, {(2, 1, 0), (1, 1, 1)},
                 {(3, 1, 0), (2, 1, 1)}, {(3, 1, 1)}]
         pi22 = [gen_parikh_set(s2, k, 3) for k in xrange(1, len(s2) + 1)]
         self.verify_parikh_sets(pi21, pi22)
 
-        s3 = self.str_to_tuple("aaaaaa")
+        s3 = str_to_tuple("aaaaaa")
         pi31 = [{(1,)}, {(2,)}, {(3,)}, {(4,)}, {(5,)}, {(6,)}]
         pi32 = [gen_parikh_set(s3, k, 1) for k in xrange(1, len(s3) + 1)]
         self.verify_parikh_sets(pi31, pi32)
@@ -187,7 +193,7 @@ class TestParikhSets(unittest.TestCase):
         self.assertEqual((0,), find_shortest_word({1: {(1,)}}))
         self.assertIn(find_shortest_word({1: {(1, 0), (0, 1)}, 2: {(1, 1)}}), {(0, 1), (1, 0)})
 
-        s1 = self.str_to_tuple("aabac")
+        s1 = str_to_tuple("aabac")
         pi1 = {k: gen_parikh_set(s1, k, 3) for k in xrange(1, len(s1) + 1)}
         self.assertIn(find_shortest_word(pi1), {s1, s1[::-1]})
 

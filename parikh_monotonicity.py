@@ -76,10 +76,17 @@ def check_level_connectivity(pi):
                 if p != q:
                     cnt = 0
                     for i in xrange(len(p)):
-                        if abs(p[i] - q[i]) == 1:
+                        diff = abs(p[i] - q[i])
+                        if diff == 0:
+                            pass
+                        elif diff == 1:
                             cnt += 1
-                    if cnt != 2:
-                        return False
+                        else:
+                            break
+                    if cnt == 2:
+                        break
+            else:
+                return False
     return True
 
 
@@ -120,8 +127,11 @@ def find_exception(sigma_size=2):
             print cnt
             cnt = 0
         if pi and check_level_connectivity(pi) and find_shortest_word(pi) is None:
-            print pi
+            # print pi
+            yield pi
             cnt += 1
         #     break
         i += 1
-find_exception(2)
+
+# for pi in find_exception(2):
+#     print pi
